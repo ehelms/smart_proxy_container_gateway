@@ -31,14 +31,30 @@ module Proxy
         uri = URI.parse(
           "#{Proxy::ContainerGateway::Plugin.settings.pulp_endpoint}/pulpcore_registry/v2/#{repository}/manifests/#{tag}"
         )
-        pulp_registry_request(uri)['location']
+        location = pulp_registry_request(uri)['location']
+
+        if (loadbalancer = Proxy::ContainerGateway::Plugin.settings.loadbalancer)
+          redirection_uri = URI(location)
+          redirection_uri.host = URI(loadbalancer).host
+          redirection_uri.to_s
+        else
+          location
+        end
       end
 
       def blobs(repository, digest)
         uri = URI.parse(
           "#{Proxy::ContainerGateway::Plugin.settings.pulp_endpoint}/pulpcore_registry/v2/#{repository}/blobs/#{digest}"
         )
-        pulp_registry_request(uri)['location']
+        location = pulp_registry_request(uri)['location']
+
+        if (loadbalancer = Proxy::ContainerGateway::Plugin.settings.loadbalancer)
+          redirection_uri = URI(location)
+          redirection_uri.host = URI(loadbalancer).host
+          redirection_uri.to_s
+        else
+          location
+        end
       end
 
       def tags(repository, params = {})
